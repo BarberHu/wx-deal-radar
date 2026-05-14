@@ -1,0 +1,11 @@
+wx_deal_hits.jsonl
+.env
+config.json
+data/
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+dist/
+build/
+tmp-*.log

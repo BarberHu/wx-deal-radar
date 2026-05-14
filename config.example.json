@@ -1,0 +1,45 @@
+﻿{
+  "wx_exe": "D:\\NVM\\nvm\\node_global\\wx.exe",
+  "poll_interval_seconds": 30,
+  "new_message_limit": 200,
+  "enable_windows_notify": true,
+  "target_groups": [
+    "小董跑鞋攻略",
+    "小新跑鞋攻略",
+    "小白菜群"
+  ],
+  "global_keywords": [
+    "bug价",
+    "神价",
+    "史低",
+    "好价",
+    "豪车",
+    "上车",
+    "速度",
+    "码全"
+  ],
+  "blacklist_words": [
+    "下架",
+    "结束",
+    "无货",
+    "售罄",
+    "拍错不退"
+  ],
+  "products": [
+    {
+      "name": "阿迪达斯 Pro 4",
+      "keywords": ["pro4", "pro 4", "阿迪", "adidas"],
+      "max_price": 650
+    },
+    {
+      "name": "李宁飞电",
+      "keywords": ["飞电", "李宁"],
+      "max_price": 700
+    },
+    {
+      "name": "防晒衣/速干户外",
+      "keywords": ["防晒衣", "速干", "冲锋衣", "户外"],
+      "max_price": 120
+    }
+  ]
+}
