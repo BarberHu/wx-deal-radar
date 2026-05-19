@@ -2,6 +2,7 @@ wx_deal_hits.jsonl
 .env
 config.json
 data/
+exports/
 __pycache__/
 *.pyc
 .venv/
