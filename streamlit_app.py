@@ -3,7 +3,7 @@ from __future__ import annotations
 import streamlit as st
 
 from app.config import AppConfig, ProductRule, load_config, save_config
-from app.monitor import DealMonitor, load_hits
+from app.monitor import DealMonitor, clear_hits, load_hits
 from app.wx_client import WxClient
 
 
@@ -164,6 +164,15 @@ with page[1]:
 
 with page[2]:
     st.subheader("命中日志")
+    st.caption("这里显示的是历史命中日志。删除或修改规则不会自动清空已经记录的命中。")
+    col_refresh, col_clear = st.columns(2)
+    if col_refresh.button("刷新日志", use_container_width=True):
+        st.rerun()
+    if col_clear.button("清空命中日志", type="secondary", use_container_width=True):
+        reset_monitor()
+        clear_hits()
+        st.success("已清空命中日志，并停止当前监控。请按需重新启动监控。")
+        st.rerun()
     rows = load_hits(limit=300)
     if not rows:
         st.info("暂无命中。启动监控或单次扫描后会在这里显示。")

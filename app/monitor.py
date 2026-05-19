@@ -1,11 +1,10 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import datetime
 import json
 from pathlib import Path
 import threading
-import time
 from typing import Callable
 
 from .config import AppConfig, DEFAULT_LOG_PATH
@@ -89,3 +88,8 @@ def load_hits(log_path: Path = DEFAULT_LOG_PATH, limit: int = 200) -> list[dict]
         except json.JSONDecodeError:
             continue
     return list(reversed(rows))
+
+
+def clear_hits(log_path: Path = DEFAULT_LOG_PATH) -> None:
+    if log_path.exists():
+        log_path.unlink()
