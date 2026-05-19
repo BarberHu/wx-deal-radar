@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import streamlit as st
 
@@ -21,9 +21,18 @@ def list_to_lines(items: list[str]) -> str:
 def ensure_monitor(config: AppConfig) -> DealMonitor:
     monitor = st.session_state.get("monitor")
     if not monitor or monitor.config.to_dict() != config.to_dict():
+        if monitor:
+            monitor.stop()
         monitor = DealMonitor(config)
         st.session_state["monitor"] = monitor
     return monitor
+
+
+def reset_monitor() -> None:
+    monitor = st.session_state.get("monitor")
+    if monitor:
+        monitor.stop()
+    st.session_state.pop("monitor", None)
 
 
 config = load_config()
@@ -57,14 +66,38 @@ with page[0]:
     st.subheader("基础配置")
     wx_exe = st.text_input("wx.exe 路径", value=config.wx_exe)
     col1, col2, col3 = st.columns(3)
-    poll_interval = col1.number_input("轮询间隔（秒）", min_value=5, max_value=600, value=config.poll_interval_seconds, step=5)
-    new_message_limit = col2.number_input("每次读取新消息上限", min_value=20, max_value=1000, value=config.new_message_limit, step=20)
+    poll_interval = col1.number_input(
+        "轮询间隔（秒）",
+        min_value=5,
+        max_value=600,
+        value=config.poll_interval_seconds,
+        step=5,
+    )
+    new_message_limit = col2.number_input(
+        "每次读取新消息上限",
+        min_value=20,
+        max_value=1000,
+        value=config.new_message_limit,
+        step=20,
+    )
     enable_notify = col3.toggle("Windows 弹窗提醒", value=config.enable_windows_notify)
 
     st.subheader("监控范围")
-    groups_text = st.text_area("目标群（每行一个，支持模糊匹配）", value=list_to_lines(config.target_groups), height=140)
-    keywords_text = st.text_area("全局关键词（每行一个）", value=list_to_lines(config.global_keywords), height=140)
-    blacklist_text = st.text_area("黑名单词（命中则不提醒，每行一个）", value=list_to_lines(config.blacklist_words), height=120)
+    groups_text = st.text_area(
+        "目标群（每行一个，支持模糊匹配）",
+        value=list_to_lines(config.target_groups),
+        height=140,
+    )
+    keywords_text = st.text_area(
+        "全局关键词（每行一个）",
+        value=list_to_lines(config.global_keywords),
+        height=140,
+    )
+    blacklist_text = st.text_area(
+        "黑名单词（命中则不提醒，每行一个）",
+        value=list_to_lines(config.blacklist_words),
+        height=120,
+    )
 
     if st.button("保存基础配置", type="primary"):
         updated = AppConfig(
@@ -78,20 +111,41 @@ with page[0]:
             products=config.products,
         )
         save_config(updated)
-        st.session_state.pop("monitor", None)
-        st.success("已保存配置")
+        reset_monitor()
+        st.success("已保存配置，并停止旧监控线程。请重新启动监控。")
         st.rerun()
 
 with page[1]:
     st.subheader("商品 + 价格阈值")
-    st.caption("逻辑：商品关键词命中后，如果识别到价格且低于阈值，就提醒；未识别价格时也会提醒你人工确认。")
-    products = []
+    st.caption(
+        "逻辑：商品关键词命中后，如果识别到价格且低于阈值，就提醒；"
+        "未识别价格时也会提醒你人工确认。取消勾选“保留这条规则”并保存即可删除。"
+    )
+    products: list[ProductRule] = []
     for index, product in enumerate(config.products):
         with st.expander(product.name or f"商品规则 {index + 1}", expanded=True):
+            keep_rule = st.checkbox("保留这条规则", value=True, key=f"keep_{index}")
             name = st.text_input("商品名", value=product.name, key=f"name_{index}")
-            keywords = st.text_area("商品关键词（每行一个）", value=list_to_lines(product.keywords), key=f"kw_{index}")
-            max_price = st.number_input("最高提醒价", min_value=0.0, value=float(product.max_price or 0), step=10.0, key=f"price_{index}")
-            products.append(ProductRule(name=name, keywords=lines_to_list(keywords), max_price=max_price or None))
+            keywords = st.text_area(
+                "商品关键词（每行一个）",
+                value=list_to_lines(product.keywords),
+                key=f"kw_{index}",
+            )
+            max_price = st.number_input(
+                "最高提醒价",
+                min_value=0.0,
+                value=float(product.max_price or 0),
+                step=10.0,
+                key=f"price_{index}",
+            )
+            if keep_rule:
+                products.append(
+                    ProductRule(
+                        name=name,
+                        keywords=lines_to_list(keywords),
+                        max_price=max_price or None,
+                    )
+                )
 
     with st.expander("新增商品规则"):
         new_name = st.text_input("新商品名")
@@ -104,8 +158,8 @@ with page[1]:
         updated = config
         updated.products = [p for p in products if p.name.strip() and p.keywords]
         save_config(updated)
-        st.session_state.pop("monitor", None)
-        st.success("已保存商品规则")
+        reset_monitor()
+        st.success("已保存商品规则，并停止旧监控线程。请重新启动监控。")
         st.rerun()
 
 with page[2]:
