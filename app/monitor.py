@@ -50,7 +50,7 @@ class DealMonitor:
             self.seen.add(unique_key)
             self._append_hit(hit)
             if self.config.enable_windows_notify:
-                windows_notify(f"好价命中：{hit.chat}", f"{hit.reason}\n{hit.content[:120]}")
+                windows_notify(f"\u597d\u4ef7\u547d\u4e2d\uff1a{hit.chat}", f"{hit.reason}\n{hit.content[:120]}")
             hits.append(hit)
         self.last_check = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return hits

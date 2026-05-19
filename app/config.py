@@ -24,6 +24,8 @@ class AppConfig:
     poll_interval_seconds: int = 30
     new_message_limit: int = 200
     enable_windows_notify: bool = True
+    enable_page_auto_refresh: bool = True
+    page_auto_refresh_seconds: int = 15
     target_groups: list[str] = field(default_factory=list)
     global_keywords: list[str] = field(default_factory=list)
     blacklist_words: list[str] = field(default_factory=list)
@@ -37,6 +39,8 @@ class AppConfig:
             poll_interval_seconds=int(data.get("poll_interval_seconds", 30)),
             new_message_limit=int(data.get("new_message_limit", 200)),
             enable_windows_notify=bool(data.get("enable_windows_notify", True)),
+            enable_page_auto_refresh=bool(data.get("enable_page_auto_refresh", True)),
+            page_auto_refresh_seconds=int(data.get("page_auto_refresh_seconds", 15)),
             target_groups=list(data.get("target_groups", [])),
             global_keywords=list(data.get("global_keywords", [])),
             blacklist_words=list(data.get("blacklist_words", [])),
@@ -49,6 +53,8 @@ class AppConfig:
             "poll_interval_seconds": self.poll_interval_seconds,
             "new_message_limit": self.new_message_limit,
             "enable_windows_notify": self.enable_windows_notify,
+            "enable_page_auto_refresh": self.enable_page_auto_refresh,
+            "page_auto_refresh_seconds": self.page_auto_refresh_seconds,
             "target_groups": self.target_groups,
             "global_keywords": self.global_keywords,
             "blacklist_words": self.blacklist_words,

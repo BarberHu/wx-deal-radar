@@ -3,6 +3,8 @@
   "poll_interval_seconds": 30,
   "new_message_limit": 200,
   "enable_windows_notify": true,
+  "enable_page_auto_refresh": true,
+  "page_auto_refresh_seconds": 15,
   "target_groups": [
     "小董跑鞋攻略",
     "小新跑鞋攻略",

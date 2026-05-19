@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from app.config import AppConfig, ProductRule, load_config, save_config
 from app.monitor import DealMonitor, clear_hits, load_hits
@@ -35,6 +36,20 @@ def reset_monitor() -> None:
     st.session_state.pop("monitor", None)
 
 
+def enable_browser_auto_refresh(seconds: int) -> None:
+    delay_ms = max(5, seconds) * 1000
+    components.html(
+        f"""
+        <script>
+        setTimeout(function() {{
+            window.parent.location.reload();
+        }}, {delay_ms});
+        </script>
+        """,
+        height=0,
+    )
+
+
 config = load_config()
 st.title("wx-deal-radar")
 st.caption("本地微信群好价雷达：指定群 + 商品规则 + 价格阈值 + 黑名单词。")
@@ -45,6 +60,8 @@ with st.sidebar:
     st.write("状态：", "运行中" if monitor.running() else "未运行")
     if monitor.last_check:
         st.write("上次检查：", monitor.last_check)
+    if monitor.running() and config.enable_page_auto_refresh:
+        st.write("页面自动刷新：", f"{config.page_auto_refresh_seconds} 秒")
     if monitor.last_error:
         st.error(monitor.last_error)
 
@@ -62,10 +79,13 @@ with st.sidebar:
 
 page = st.tabs(["监控配置", "商品规则", "命中日志", "微信状态"])
 
+if monitor.running() and config.enable_page_auto_refresh:
+    enable_browser_auto_refresh(config.page_auto_refresh_seconds)
+
 with page[0]:
     st.subheader("基础配置")
     wx_exe = st.text_input("wx.exe 路径", value=config.wx_exe)
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     poll_interval = col1.number_input(
         "轮询间隔（秒）",
         min_value=5,
@@ -99,12 +119,23 @@ with page[0]:
         height=120,
     )
 
+    enable_page_auto_refresh = col4.toggle("\u9875\u9762\u81ea\u52a8\u5237\u65b0", value=config.enable_page_auto_refresh)
+    page_auto_refresh_seconds = st.number_input(
+        "\u9875\u9762\u5237\u65b0\u95f4\u9694\uff08\u79d2\uff0c\u4ec5\u76d1\u63a7\u8fd0\u884c\u65f6\u751f\u6548\uff09",
+        min_value=5,
+        max_value=300,
+        value=config.page_auto_refresh_seconds,
+        step=5,
+    )
+
     if st.button("保存基础配置", type="primary"):
         updated = AppConfig(
             wx_exe=wx_exe,
             poll_interval_seconds=int(poll_interval),
             new_message_limit=int(new_message_limit),
             enable_windows_notify=enable_notify,
+            enable_page_auto_refresh=enable_page_auto_refresh,
+            page_auto_refresh_seconds=int(page_auto_refresh_seconds),
             target_groups=lines_to_list(groups_text),
             global_keywords=lines_to_list(keywords_text),
             blacklist_words=lines_to_list(blacklist_text),
