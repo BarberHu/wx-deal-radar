@@ -3,12 +3,17 @@
 import json
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 
 @dataclass
 class WxClient:
     wx_exe: str
+
+    @property
+    def workdir(self) -> Path:
+        return Path.home() / ".wx-cli"
 
     def new_messages(self, limit: int = 200) -> list[dict[str, Any]]:
         proc = subprocess.run(
@@ -17,6 +22,7 @@ class WxClient:
             text=True,
             encoding="utf-8",
             errors="replace",
+            cwd=self.workdir,
         )
         if proc.returncode != 0:
             raise RuntimeError((proc.stderr or proc.stdout).strip())
@@ -30,6 +36,7 @@ class WxClient:
             text=True,
             encoding="utf-8",
             errors="replace",
+            cwd=self.workdir,
         )
         if proc.returncode != 0:
             raise RuntimeError((proc.stderr or proc.stdout).strip())
